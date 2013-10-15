@@ -1,7 +1,7 @@
 all: cj
 
 cj: bin_
-	g++ cj.cpp -o bin/cj
+	g++ -Ofast -Wall cj.cpp -o bin/cj
 
 bin_:
 	mkdir -p bin

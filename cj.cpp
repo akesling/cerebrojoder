@@ -11,21 +11,24 @@ enum INSTRUCTION {
     RBRACK = 93,
 };
 
+char DATA[60000] = {};
+
 int main() {
-    INSTRUCTION input;;
+    char *ptr = &DATA[30000];
+    INSTRUCTION input;
     while ((input = static_cast<INSTRUCTION>(getchar_unlocked())) != -1) {
         switch(input) {
             case LANGLE:
-                putchar_unlocked(input);
+                --ptr;
                 break;
             case RANGLE:
-                putchar_unlocked(input);
+                ++ptr;
                 break;
             case INC:
-                putchar_unlocked(input);
+                ++*ptr;
                 break;
             case DEC:
-                putchar_unlocked(input);
+                --*ptr;
                 break;
             case LBRACK:
                 putchar_unlocked(input);
@@ -34,13 +37,11 @@ int main() {
                 putchar_unlocked(input);
                 break;
             case OUT:
-                putchar_unlocked(input);
+                putchar_unlocked(*ptr);
                 break;
             case IN:
-                putchar_unlocked(input);
+                *ptr = getchar_unlocked();
                 break;
-            default:
-                cout << "Invalid char: " << (int) input << "\n";
         }
     }
     return 0;
