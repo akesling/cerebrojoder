@@ -7,14 +7,14 @@ static const int HEAPSIZE=30000;
 static const int STACKSIZE=3000;
 char DATA[HEAPSIZE] = {};
 char CODE[HEAPSIZE] = {};
-char *JUMPS[HEAPSIZE] = {};
+int JUMPS[HEAPSIZE] = {};
 
-char *STACK[STACKSIZE] = {};
+int STACK[STACKSIZE] = {};
 
 int main() {
-    char **stack_ptr = STACK;
+    int *stack_ptr = STACK;
     char input;
-    for (char *jumps_ptr = CODE;
+    for (int code_counter = 0;
          (input = getchar_unlocked()) != -1;) {
         switch(input) {
             case '<':
@@ -23,21 +23,21 @@ int main() {
             case '-':
             case '.':
             case ',':
-                *jumps_ptr = input;
-                ++jumps_ptr;
+                CODE[code_counter] = input;
+                ++code_counter;
                 break;
             case '[':
-                *stack_ptr = jumps_ptr;
+                *stack_ptr = code_counter;
                 ++stack_ptr;
-                *jumps_ptr = input;
-                ++jumps_ptr;
+                CODE[code_counter] = input;
+                ++code_counter;
                 break;
             case ']':
                 --stack_ptr;
-                JUMPS[*stack_ptr - CODE] = jumps_ptr;
-                JUMPS[jumps_ptr - CODE] = *stack_ptr;
-                *jumps_ptr = input;
-                ++jumps_ptr;
+                JUMPS[*stack_ptr] = code_counter;
+                JUMPS[code_counter] = *stack_ptr;
+                CODE[code_counter] = input;
+                ++code_counter;
                 break;
         }
     }
@@ -60,12 +60,12 @@ int main() {
                 break;
             case '[':
                 if (!*data_ptr) {
-                    code_ptr = JUMPS[code_ptr-CODE];
+                    code_ptr = (char*) (CODE + JUMPS[code_ptr-CODE]);
                 }
                 break;
             case ']':
                 if (*data_ptr) {
-                    code_ptr = JUMPS[code_ptr-CODE];
+                    code_ptr = (char*) (CODE + JUMPS[code_ptr-CODE]);
                 }
                 break;
             case '.':
