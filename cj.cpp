@@ -3,44 +3,76 @@
 
 using namespace std;
 
-enum INSTRUCTION {
-    INC = 43, IN, DEC, OUT,
-    LANGLE = 60,
-    RANGLE = 62,
-    LBRACK = 91,
-    RBRACK = 93,
-};
+static const int HEAPSIZE=30000;
+static const int STACKSIZE=3000;
+char DATA[HEAPSIZE] = {};
+char CODE[HEAPSIZE] = {};
+int JUMPS[HEAPSIZE] = {};
 
-char DATA[60000] = {};
+int STACK[STACKSIZE] = {};
 
 int main() {
-    char *ptr = &DATA[30000];
-    INSTRUCTION input;
-    while ((input = static_cast<INSTRUCTION>(getchar_unlocked())) != -1) {
+    int *stack_ptr = STACK;
+    char input;
+    for (int code_counter = 0;
+         (input = getchar_unlocked()) != -1;) {
         switch(input) {
-            case LANGLE:
-                --ptr;
+            case '<':
+            case '>':
+            case '+':
+            case '-':
+            case '.':
+            case ',':
+                CODE[code_counter] = input;
+                ++code_counter;
                 break;
-            case RANGLE:
-                ++ptr;
+            case '[':
+                *stack_ptr = code_counter;
+                ++stack_ptr;
+                CODE[code_counter] = input;
+                ++code_counter;
                 break;
-            case INC:
-                ++*ptr;
+            case ']':
+                --stack_ptr;
+                JUMPS[*stack_ptr] = code_counter;
+                JUMPS[code_counter] = *stack_ptr;
+                CODE[code_counter] = input;
+                ++code_counter;
                 break;
-            case DEC:
-                --*ptr;
+        }
+    }
+
+    for (char *code_ptr = CODE, *data_ptr = DATA;
+         code_ptr < &CODE[HEAPSIZE];
+         code_ptr++) {
+        switch(*code_ptr) {
+            case '<':
+                --data_ptr;
                 break;
-            case LBRACK:
-                putchar_unlocked(input);
+            case '>':
+                ++data_ptr;
                 break;
-            case RBRACK:
-                putchar_unlocked(input);
+            case '+':
+                ++*data_ptr;
                 break;
-            case OUT:
-                putchar_unlocked(*ptr);
+            case '-':
+                --*data_ptr;
                 break;
-            case IN:
-                *ptr = getchar_unlocked();
+            case '[':
+                if (!*data_ptr) {
+                    code_ptr = (char*) (CODE + JUMPS[code_ptr-CODE]);
+                }
+                break;
+            case ']':
+                if (*data_ptr) {
+                    code_ptr = (char*) (CODE + JUMPS[code_ptr-CODE]);
+                }
+                break;
+            case '.':
+                putchar_unlocked(*data_ptr);
+                break;
+            case ',':
+                *data_ptr = getchar_unlocked();
                 break;
         }
     }
