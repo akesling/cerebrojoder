@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include <iostream>
+#include <stdio.h>
+#include <utility>
 
 using namespace std;
 
@@ -7,22 +8,40 @@ static const int HEAPSIZE=30000;
 static const int CODESIZE=30000;
 static const int STACKSIZE=3000;
 
-char DATA[HEAPSIZE] = {};
-char CODE[CODESIZE] = {};
+unsigned char DATA[HEAPSIZE] = {};
+unsigned char CODE[CODESIZE] = {};
 int JUMPS[HEAPSIZE] = {};
 
 int STACK[STACKSIZE] = {};
 
-void byte_code_compile() {
+unsigned char parse_run(char character) {
+/* This code makes a ton of assumptions... not all of them technically
+ * valid BrainFuck... one such being that there can be a max run of 255
+ * of the same symbol (for some symbols) in a row.
+ */
+    unsigned char number = 1;
+    char next_char;
+    while ((next_char = getchar_unlocked()) == character) {
+        ++number;
+    }
+    ungetc(next_char, stdin);
+    return number;
+}
+
+void parse_and_compile() {
     int *stack_ptr = STACK;
     char input;
-    for (int code_counter = 0;
-         (input = getchar_unlocked()) != -1;) {
+    for (int code_counter = 0; (input = getchar_unlocked()) != -1;) {
         switch(input) {
             case '<':
             case '>':
             case '+':
             case '-':
+                CODE[code_counter] = input;
+                ++code_counter;
+                CODE[code_counter] = parse_run(input);
+                ++code_counter;
+                break;
             case '.':
             case ',':
                 CODE[code_counter] = input;
@@ -45,31 +64,37 @@ void byte_code_compile() {
     }
 }
 
-void run_vm() {
-    for (char *code_ptr = CODE, *data_ptr = DATA;
+void run() {
+    for (unsigned char *code_ptr = CODE, *data_ptr = DATA;
          code_ptr < &CODE[CODESIZE];
          code_ptr++) {
         switch(*code_ptr) {
             case '<':
-                --data_ptr;
+                ++code_ptr;
+                data_ptr -= *code_ptr;
                 break;
             case '>':
-                ++data_ptr;
+                ++code_ptr;
+                data_ptr += *code_ptr;
                 break;
             case '+':
-                ++*data_ptr;
+                ++code_ptr;
+                *data_ptr += *code_ptr;
                 break;
             case '-':
-                --*data_ptr;
+                ++code_ptr;
+                *data_ptr -= *code_ptr;
                 break;
             case '[':
                 if (!*data_ptr) {
-                    code_ptr = (char*) (CODE + JUMPS[code_ptr-CODE]);
+                    code_ptr =
+                        (unsigned char*) (CODE + JUMPS[code_ptr-CODE]);
                 }
                 break;
             case ']':
                 if (*data_ptr) {
-                    code_ptr = (char*) (CODE + JUMPS[code_ptr-CODE]);
+                    code_ptr =
+                        (unsigned char*) (CODE + JUMPS[code_ptr-CODE]);
                 }
                 break;
             case '.':
@@ -83,7 +108,14 @@ void run_vm() {
 }
 
 int main() {
-    byte_code_compile();
-    run_vm();
+    parse_and_compile();
+    /*
+    for (auto& c : CODE) {
+        if (c > 0 ) {
+            cout << c;
+        }
+    }
+    */
+    run();
     return 0;
 }

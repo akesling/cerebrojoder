@@ -1,10 +1,12 @@
-all: naive
+OPTIONS=-Ofast -Wall -std=c++11
+
+all: naive vm
 
 naive: bin_
-	g++ -Ofast -Wall naive.cpp -o bin/naive
+	g++ $(OPTIONS) naive.cpp -o bin/naive
 
 vm: bin_
-	g++ -Ofast -Wall vm.cpp -o bin/vm
+	g++ $(OPTIONS) vm.cpp -o bin/vm
 
 bin_:
 	mkdir -p bin
