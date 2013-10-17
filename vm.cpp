@@ -4,14 +4,16 @@
 using namespace std;
 
 static const int HEAPSIZE=30000;
+static const int CODESIZE=30000;
 static const int STACKSIZE=3000;
+
 char DATA[HEAPSIZE] = {};
-char CODE[HEAPSIZE] = {};
+char CODE[CODESIZE] = {};
 int JUMPS[HEAPSIZE] = {};
 
 int STACK[STACKSIZE] = {};
 
-int main() {
+void byte_code_compile() {
     int *stack_ptr = STACK;
     char input;
     for (int code_counter = 0;
@@ -41,9 +43,11 @@ int main() {
                 break;
         }
     }
+}
 
+void run_vm() {
     for (char *code_ptr = CODE, *data_ptr = DATA;
-         code_ptr < &CODE[HEAPSIZE];
+         code_ptr < &CODE[CODESIZE];
          code_ptr++) {
         switch(*code_ptr) {
             case '<':
@@ -76,5 +80,10 @@ int main() {
                 break;
         }
     }
+}
+
+int main() {
+    byte_code_compile();
+    run_vm();
     return 0;
 }
