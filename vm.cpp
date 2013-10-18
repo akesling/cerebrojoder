@@ -7,6 +7,7 @@ using namespace std;
 static const int HEAPSIZE=30000;
 static const int CODESIZE=30000;
 static const int STACKSIZE=3000;
+static const int MAXCHAR=255;
 
 unsigned char DATA[HEAPSIZE] = {};
 unsigned char CODE[CODESIZE] = {};
@@ -15,13 +16,10 @@ int JUMPS[HEAPSIZE] = {};
 int STACK[STACKSIZE] = {};
 
 unsigned char parse_run(char character) {
-/* This code makes a ton of assumptions... not all of them technically
- * valid BrainFuck... one such being that there can be a max run of 255
- * of the same symbol (for some symbols) in a row.
- */
     unsigned char number = 1;
     char next_char;
-    while ((next_char = getchar_unlocked()) == character) {
+    while ((next_char = getchar_unlocked()) == character &&
+           number < 255) {
         ++number;
     }
     ungetc(next_char, stdin);
