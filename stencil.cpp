@@ -129,7 +129,7 @@ void parse_and_compile() {
 void run() {
     unsigned char *tmp_data_ptr;
     unsigned char *data_ptr = DATA;
-    stencil_type stencil;
+    stencil_type *stencil;
     for (unsigned char *code_ptr = CODE;
          code_ptr < &CODE[CODESIZE];
          code_ptr++) {
@@ -140,18 +140,18 @@ void run() {
         */
         switch(*code_ptr) {
             case STENCIL_INSTRUCTION:
-                stencil = STENCILS[code_ptr-CODE];
+                stencil = &STENCILS[code_ptr-CODE];
                 /*
                 cout << "C" << data_ptr-DATA << " O" << stencil.offset
                      << " M" << stencil.move << " V";
                 print_vec(stencil.cells);
                 */
-                tmp_data_ptr = data_ptr - stencil.offset;
-                for (auto& cell : stencil.cells) {
+                tmp_data_ptr = data_ptr - stencil->offset;
+                for (auto& cell : stencil->cells) {
                     *tmp_data_ptr = (unsigned char) *tmp_data_ptr + cell;
                     ++tmp_data_ptr;
                 }
-                data_ptr += stencil.move;
+                data_ptr += stencil->move;
                 break;
             case '<':
                 ++code_ptr;
