@@ -1,14 +1,17 @@
-OPTIONS=-Ofast -Wall -std=c++11
+OPTIONS=-Ofast -Wall -std=c++11 -pedantic
 
-all: naive vm
+all: bin/naive bin/vm bin/stencil
 
-naive: bin_
+bin/naive: bin
 	g++ $(OPTIONS) naive.cpp -o bin/naive
 
-vm: bin_
+bin/vm: bin
 	g++ $(OPTIONS) vm.cpp -o bin/vm
 
-bin_:
+bin/stencil: bin
+	g++ $(OPTIONS) stencil.cpp -o bin/stencil
+
+bin:
 	mkdir -p bin
 
 clean:
