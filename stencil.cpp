@@ -10,7 +10,8 @@ using namespace std;
 struct stencil_type {
     int offset;
     int move;
-    vector<short> cells;
+    unsigned int length;
+    unique_ptr<short[]> cells;
 };
 
 static const int HEAPSIZE=30000;
@@ -28,7 +29,7 @@ static int STACK[STACKSIZE] = {};
 
 stencil_type build_stencil() {
     stencil_type stencil;
-    stencil.cells.push_back(0);
+    vector<short> stencil_buffer(1,0);
     int cursor = 0;
     int left_offset = 0;
 
@@ -39,21 +40,21 @@ stencil_type build_stencil() {
                 if (cursor > 0) {
                     --cursor;
                 } else {
-                    stencil.cells.insert(stencil.cells.begin(), 0);
+                    stencil_buffer.insert(stencil_buffer.begin(), 0);
                     ++left_offset;
                 }
                 break;
             case '>':
                 ++cursor;
-                if (cursor >= (int) (stencil.cells.size())) {
-                    stencil.cells.push_back(0);
+                if (cursor >= (int) (stencil_buffer.size())) {
+                    stencil_buffer.push_back(0);
                 }
                 break;
             case '+':
-                ++stencil.cells[cursor];
+                ++stencil_buffer[cursor];
                 break;
             case '-':
-                --stencil.cells[cursor];
+                --stencil_buffer[cursor];
                 break;
             case '[':
             case ']':
@@ -64,23 +65,15 @@ stencil_type build_stencil() {
         }
     }
     exit_loop:
+    ungetc(next_char, stdin);
+
     stencil.move = cursor - left_offset;
     stencil.offset = left_offset;
-
-    ungetc(next_char, stdin);
+    stencil.length = stencil_buffer.size();
+    stencil.cells.reset(new short[stencil.length]());
+    copy(stencil_buffer.begin(), stencil_buffer.end(), stencil.cells.get());
 
     return stencil;
-}
-
-unsigned char parse_run(char character) {
-    unsigned char number = 1;
-    char next_char;
-    while ((next_char = getchar_unlocked()) == character &&
-           number < 255) {
-        ++number;
-    }
-    ungetc(next_char, stdin);
-    return number;
 }
 
 void parse_and_compile() {
@@ -133,27 +126,11 @@ void run() {
                 tmp_data_ptr = data_ptr - stencil->offset;
                 data_ptr += stencil->move;
 
-                for (unsigned int i= 0; i < stencil->cells.size(); ++i) {
+                for (unsigned int i= 0; i < stencil->length; ++i) {
                     *tmp_data_ptr = (unsigned char) *tmp_data_ptr +
                         stencil->cells[i];
                     ++tmp_data_ptr;
                 }
-                break;
-            case '<':
-                ++code_ptr;
-                data_ptr -= *code_ptr;
-                break;
-            case '>':
-                ++code_ptr;
-                data_ptr += *code_ptr;
-                break;
-            case '+':
-                ++code_ptr;
-                *data_ptr += *code_ptr;
-                break;
-            case '-':
-                ++code_ptr;
-                *data_ptr -= *code_ptr;
                 break;
             case '[':
                 if (!*data_ptr) {
