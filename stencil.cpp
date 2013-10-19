@@ -97,12 +97,6 @@ void parse_and_compile() {
                 CODE[code_counter] = STENCIL_INSTRUCTION;
                 STENCILS[code_counter] = build_stencil();
                 ++code_counter;
-                /*
-                CODE[code_counter] = input;
-                ++code_counter;
-                CODE[code_counter] = parse_run(input);
-                ++code_counter;
-                */
                 break;
             case '.':
             case ',':
@@ -133,25 +127,17 @@ void run() {
     for (unsigned char *code_ptr = CODE;
          code_ptr < &CODE[CODESIZE];
          code_ptr++) {
-        /*
-        if (*code_ptr > 0) {
-            cout << "I: " << *code_ptr << "\n";
-        }
-        */
         switch(*code_ptr) {
             case STENCIL_INSTRUCTION:
                 stencil = &STENCILS[code_ptr-CODE];
-                /*
-                cout << "C" << data_ptr-DATA << " O" << stencil.offset
-                     << " M" << stencil.move << " V";
-                print_vec(stencil.cells);
-                */
                 tmp_data_ptr = data_ptr - stencil->offset;
-                for (auto& cell : stencil->cells) {
-                    *tmp_data_ptr = (unsigned char) *tmp_data_ptr + cell;
+                data_ptr += stencil->move;
+
+                for (unsigned int i= 0; i < stencil->cells.size(); ++i) {
+                    *tmp_data_ptr = (unsigned char) *tmp_data_ptr +
+                        stencil->cells[i];
                     ++tmp_data_ptr;
                 }
-                data_ptr += stencil->move;
                 break;
             case '<':
                 ++code_ptr;
