@@ -11,7 +11,7 @@ struct stencil_type {
     int offset;
     int move;
     unsigned int length;
-    unique_ptr<short[]> cells;
+    short* cells;
 };
 
 static const int HEAPSIZE=30000;
@@ -70,8 +70,10 @@ stencil_type build_stencil() {
     stencil.move = cursor - left_offset;
     stencil.offset = left_offset;
     stencil.length = stencil_buffer.size();
-    stencil.cells.reset(new short[stencil.length]());
-    copy(stencil_buffer.begin(), stencil_buffer.end(), stencil.cells.get());
+    //stencil.cells.reset(new short[stencil.length]());
+    //copy(stencil_buffer.begin(), stencil_buffer.end(), stencil.cells.get());
+    stencil.cells = new short[stencil.length]();
+    copy(stencil_buffer.begin(), stencil_buffer.end(), stencil.cells);
 
     return stencil;
 }
