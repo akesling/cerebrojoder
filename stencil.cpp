@@ -1,15 +1,13 @@
 #include <algorithm>
 #include <iostream>
-#include <memory>
 #include <stdio.h>
-#include <utility>
 #include <vector>
 
 using namespace std;
 
 struct stencil_type {
     int offset;
-    int move;
+    int end_move;
     unsigned int length;
     short* cells;
 };
@@ -31,7 +29,7 @@ stencil_type build_stencil() {
     stencil_type stencil;
     vector<short> stencil_buffer(1,0);
     int cursor = 0;
-    int left_offset = 0;
+    int offset = 0;
 
     char next_char;
     while ((next_char = getchar_unlocked()) != EOF) {
@@ -41,7 +39,7 @@ stencil_type build_stencil() {
                     --cursor;
                 } else {
                     stencil_buffer.insert(stencil_buffer.begin(), 0);
-                    ++left_offset;
+                    --offset;
                 }
                 break;
             case '>':
@@ -67,11 +65,9 @@ stencil_type build_stencil() {
     exit_loop:
     ungetc(next_char, stdin);
 
-    stencil.move = cursor - left_offset;
-    stencil.offset = left_offset;
     stencil.length = stencil_buffer.size();
-    //stencil.cells.reset(new short[stencil.length]());
-    //copy(stencil_buffer.begin(), stencil_buffer.end(), stencil.cells.get());
+    stencil.end_move = cursor - stencil.length;
+    stencil.offset = offset;
     stencil.cells = new short[stencil.length]();
     copy(stencil_buffer.begin(), stencil_buffer.end(), stencil.cells);
 
@@ -116,23 +112,24 @@ void parse_and_compile() {
 }
 
 void run() {
-    unsigned char *tmp_data_ptr;
     unsigned char *data_ptr = DATA;
     stencil_type *stencil;
+    short *stencil_cells;
+
     for (unsigned char *code_ptr = CODE;
          code_ptr < &CODE[CODESIZE];
          code_ptr++) {
         switch(*code_ptr) {
             case STENCIL_INSTRUCTION:
                 stencil = &STENCILS[code_ptr-CODE];
-                tmp_data_ptr = data_ptr - stencil->offset;
-                data_ptr += stencil->move;
+                stencil_cells = stencil->cells;
+                data_ptr += stencil->offset;
 
-                for (unsigned int i= 0; i < stencil->length; ++i) {
-                    *tmp_data_ptr = (unsigned char) *tmp_data_ptr +
-                        stencil->cells[i];
-                    ++tmp_data_ptr;
+                for (unsigned char *end_ptr = data_ptr + stencil->length;
+                     data_ptr < end_ptr; ++data_ptr, ++stencil_cells) {
+                    *data_ptr += *stencil_cells;
                 }
+                data_ptr += stencil->end_move;
                 break;
             case '[':
                 if (!*data_ptr) {
