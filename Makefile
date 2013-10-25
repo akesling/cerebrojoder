@@ -1,19 +1,15 @@
 OPTIONS=-Ofast -Wall -std=c++11 -pedantic
+SOURCE_DIR=src
+BIN_DIR=bin
+CC=g++
+SUFFIX=.cpp
 
-all: bin bin/naive bin/vm bin/stencil
+% :: $(SOURCE_DIR)/%$(SUFFIX) $(BIN_DIR)
+	$(CC) $(OPTIONS) $< -o $(BIN_DIR)/$@
 
-bin/naive: naive.cpp
-	g++ $(OPTIONS) naive.cpp -o $@
+$(BIN_DIR) :
+	mkdir -p $(BIN_DIR)
 
-bin/vm: vm.cpp
-	g++ $(OPTIONS) vm.cpp -o $@
-
-bin/stencil: stencil.cpp
-	g++ $(OPTIONS) stencil.cpp -o $@
-
-bin:
-	mkdir -p bin
-
-clean:
+clean :
 	rm bin/*
 	rmdir bin
